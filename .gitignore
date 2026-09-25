@@ -1,0 +1,101 @@
+# ---------------------------------------------------------------------------
+# Scratch work and local development tests
+#
+# Everything that is not part of the shipped extension lives here: temp/ holds
+# diagnostic scripts, captured canvases and test transcripts, test/ holds the
+# Node test suites and their fixture. Neither folder belongs in the repository.
+# dist/ is the release output of scripts/build.js, rebuilt by the Release
+# workflow (.github/workflows/release.yml).
+# ---------------------------------------------------------------------------
+temp/
+.temp/
+tmp/
+.tmp/
+test/
+.test/
+doc/
+docs/
+dist/
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.log
+*.out
+*~
+
+# Test transcripts and captured boards the diagnostics write next to the code.
+canvas-*.txt
+canvas-*.log
+fiber-*.txt
+out-*.txt
+err-*.txt
+drift.txt
+t[0-9].txt
+ta.txt
+
+# ---------------------------------------------------------------------------
+# Editors and IDEs
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+*.code-workspace
+
+# ---------------------------------------------------------------------------
+# Coding agents
+# ---------------------------------------------------------------------------
+.agents/
+.agent/
+.agentsrc
+.agentrc
+.codewhale/
+.codex/
+.copilot/
+.claude/
+.cursor/
+.aider*
+.continue/
+*.agent.md
+AGENTS.local.md
+
+# ---------------------------------------------------------------------------
+# Other tool caches used while investigating the page
+# ---------------------------------------------------------------------------
+.firecrawl/
+.firecrawl*
+.playwright/
+.puppeteer/
+.cache/
+coverage/
+.nyc_output/
+
+# ---------------------------------------------------------------------------
+# Node / package managers
+# ---------------------------------------------------------------------------
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+npm-debug.log*
+.eslintcache
+
+# ---------------------------------------------------------------------------
+# Python helpers that may be used for pixel work
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---------------------------------------------------------------------------
+# OS noise
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/

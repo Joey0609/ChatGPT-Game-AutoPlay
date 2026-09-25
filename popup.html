@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Snake Autoplay</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Static text carries English as its built-in value plus a data-i18n key; popup.js rewrites every
+       [data-i18n] node from i18n.js for the stored language (English by default). -->
+  <main>
+    <header><span class="mark" aria-hidden="true">S</span><div><h1 data-i18n="appTitle">Snake Autoplay</h1><p id="site" data-i18n="site">ChatGPT waiting game</p></div></header>
+    <section class="control-row"><label for="enabled" data-i18n="autoPlay">Auto-play</label><input id="enabled" type="checkbox" role="switch"></section>
+    <section class="control-row"><label for="panel" data-i18n="showPanel">Show panel</label><input id="panel" type="checkbox" role="switch"></section>
+    <label class="field-label" for="algorithm" data-i18n="strategy">Strategy</label>
+    <select id="algorithm">
+      <option value="bfs" data-i18n="algBfs">Safe BFS</option>
+      <option value="flood" data-i18n="algFlood">Flood fill</option>
+      <option value="cycle" data-i18n="algCycle">Hamiltonian cycle</option>
+    </select>
+    <label class="field-label" for="language" data-i18n="language">Language</label>
+    <select id="language">
+      <option value="en">English</option>
+      <option value="zh">中文</option>
+      <option value="fr">Français</option>
+      <option value="ru">Русский</option>
+      <option value="es">Español</option>
+    </select>
+    <p id="status" role="status" data-i18n="checking">Checking this page…</p>
+    <p id="version" class="version">Version —</p>
+  </main>
+  <script src="i18n.js"></script>
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

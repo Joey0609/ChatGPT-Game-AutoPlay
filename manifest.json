@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "ChatGPT Snake Autoplay",
+  "version": "1.0.0",
+  "description": "Play the ChatGPT waiting-screen snake automatically: the exact React game state is read through a MAIN-world bridge, with canvas vision as the fallback.",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+  "action": {
+    "default_title": "Snake Autoplay",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+      "js": [
+        "algorithms.js",
+        "vision.js",
+        "logger.js",
+        "page.js",
+        "reader.js",
+        "i18n.js",
+        "panel.js",
+        "config.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+      "js": ["bridge.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ]
+}

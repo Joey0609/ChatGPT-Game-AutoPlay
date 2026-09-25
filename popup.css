@@ -1,0 +1,16 @@
+* { box-sizing: border-box; }
+body { width: 292px; margin: 0; color: #222; background: #fafaf8; font: 14px/1.4 system-ui, sans-serif; }
+main { padding: 16px; }
+header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 8px; color: #fff; background: #17865b; font-weight: 800; }
+h1 { margin: 0; font-size: 15px; font-weight: 700; }
+header p, #status { margin: 2px 0 0; color: #6b6b68; font-size: 12px; }
+.control-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid #e3e3de; border-bottom: 1px solid #e3e3de; }
+.control-row + .control-row { border-top: 0; }
+input[type="checkbox"] { width: 36px; height: 20px; margin: 0; accent-color: #17865b; }
+.field-label { display: flex; justify-content: space-between; margin: 14px 0 6px; color: #444; font-size: 12px; }
+select { width: 100%; height: 34px; padding: 0 8px; border: 1px solid #d0d0ca; border-radius: 5px; background: #fff; color: #222; }
+#status { min-height: 18px; margin-top: 14px; }
+#status[data-state="ready"] { color: #147249; }
+#status[data-state="error"] { color: #ae382d; }
+.version { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid #e3e3de; color: #8a8a86; font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }

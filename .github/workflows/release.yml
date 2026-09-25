@@ -1,0 +1,173 @@
+name: Release
+
+# Pushing a tag like v1.0.0 builds every package and publishes a GitHub Release.
+# Pull requests and manual runs only build and test, so a broken build never reaches a release.
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # The build and the tests use nothing but the Node standard library: there is no
+      # package.json, nothing to install and nothing to cache.
+      #
+      # `test/` is listed in .gitignore, so the suites are only there if you committed them
+      # anyway: each one is skipped with a notice when the file is missing.
+      - name: Run the test suites
+        run: |
+          set -euo pipefail
+          run_suite() {
+            if [[ -f "$1" ]]; then
+              node "$@"
+            else
+              echo "::notice::$1 is not in this checkout; skipping it."
+            fi
+          }
+          run_suite test/test-algorithms.js
+          run_suite test/test-recognition.js
+          run_suite test/test-real-board.js
+          run_suite test/test-bridge.js
+          run_suite test/test-i18n.js
+          run_suite test/test-popup.js
+          run_suite test/test-build.js
+          run_suite test/test-userscript.js
+          run_suite test/test-integration.js 900 canvas
+          run_suite test/test-integration.js 900 fiber
+
+      - name: Build the extension packages, the userscript and the .crx
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          CRX_PRIVATE_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          args=(--repo "$GITHUB_REPOSITORY")
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            # Guards against a tag that disagrees with manifest.json / bridge.js / popup.js.
+            args+=(--check-tag "${GITHUB_REF_NAME}")
+          fi
+          if [[ -n "${CRX_PRIVATE_KEY:-}" ]]; then
+            echo "Signing a .crx with the CRX_PRIVATE_KEY secret."
+            node scripts/build.js "${args[@]}" --key-env CRX_PRIVATE_KEY
+          else
+            echo "::notice::CRX_PRIVATE_KEY is not set, so the release has no .crx." \
+                 "The zip archives are what the Chrome Web Store and Edge Add-ons upload."
+            node scripts/build.js "${args[@]}"
+          fi
+
+      - name: Show what was built
+        run: ls -la dist
+
+      - name: Upload the artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: snake-autoplay-packages
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Publish the GitHub Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/snake-autoplay-*.zip
+            dist/snake-autoplay-*.user.js
+            dist/snake-autoplay-*.crx
+            dist/checksums.txt
+
+  # Everything below is optional: each step is skipped until the matching secrets exist, and the
+  # GitHub Release above is already complete without any of them.
+  publish:
+    name: Submit to the stores
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    env:
+      AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
+      AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+      CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+      CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+      CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+      CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+      EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+      EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+      EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Download the built packages
+        uses: actions/download-artifact@v4
+        with:
+          name: snake-autoplay-packages
+          path: dist
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Mozilla Add-ons (AMO): signs an unlisted XPI. Listed submissions are reviewed by a human,
+      # so this stays unlisted and the GitHub Release stays the distribution channel.
+      - name: Sign the Firefox package (AMO)
+        if: env.AMO_API_KEY != ''
+        uses: kewisch/action-web-ext@v2
+        with:
+          cmd: sign
+          source: dist/snake-autoplay-firefox.zip
+          channel: unlisted
+          apiKey: ${{ secrets.AMO_API_KEY }}
+          apiSecret: ${{ secrets.AMO_API_SECRET }}
+          artifacts: dist/amo
+          timeout: 900000
+
+      - name: Attach the signed Firefox package to the release
+        if: env.AMO_API_KEY != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          xpi="$(ls dist/amo/*.xpi | head -n 1)"
+          gh release upload "${GITHUB_REF_NAME}" "$xpi" --clobber
+
+      # Chrome Web Store: uploads the zip as a new version of an existing item. Add
+      # `npx chrome-webstore-upload-cli publish` as a second command to also submit it for review.
+      - name: Upload the Chrome package (Chrome Web Store)
+        if: env.CWS_CLIENT_ID != ''
+        env:
+          CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          npx --yes chrome-webstore-upload-cli@3 upload \
+            --source dist/snake-autoplay-chrome.zip \
+            --extension-id "${CWS_EXTENSION_ID}"
+
+      # Microsoft Edge Add-ons: also only updates an add-on that already exists.
+      - name: Upload the Edge package (Edge Add-ons)
+        if: env.EDGE_CLIENT_ID != ''
+        uses: wdzeng/edge-addon@v2
+        with:
+          product-id: ${{ secrets.EDGE_PRODUCT_ID }}
+          zip-path: dist/snake-autoplay-chrome.zip
+          client-id: ${{ secrets.EDGE_CLIENT_ID }}
+          api-key: ${{ secrets.EDGE_API_KEY }}
+          notes-for-certification: Built from ${{ github.repository }} tag ${{ github.ref_name }}.
