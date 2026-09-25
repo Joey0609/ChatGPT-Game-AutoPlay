@@ -5,10 +5,12 @@
  * language selector is added to the on-page panel instead. Everything else (strategies, the
  * auto-play switch, the board preview) already lives in `panel.js` and works unchanged.
  *
- * The panel is created inside a shadow root that `panel.js` attaches to `#snake-autoplay-panel`,
- * so the extra row is injected there, styled with inline rules that do not depend on the panel's
- * stylesheet. `content.js` rebuilds the panel whenever the language changes, and the observer here
- * re-injects the row into the new one.
+ * The panel is created inside a shadow root that `panel.js` attaches to `#snake-autoplay-panel`, so
+ * the extra row is injected into the panel's own configuration column - `#snake-autoplay-config`,
+ * the mount point panel.js keeps for exactly this. Inline rules style it, so nothing here depends on
+ * the panel's stylesheet, but the row still sits inside the card: appending it to the shadow root
+ * itself left it hanging below the rounded container. `content.js` rebuilds the panel whenever the
+ * language changes, and the observer here re-injects the row into the new one.
  */
 (() => {
   'use strict';
@@ -16,15 +18,16 @@
   const I18n = window.SnakeI18n;
   const Config = window.SnakeConfig;
   const PANEL_ID = 'snake-autoplay-panel';
+  // panel.js gives its configuration column this id so the userscript can mount inside the card.
+  const SLOT_ID = 'snake-autoplay-config';
   const ROW_ID = 'snake-autoplay-userscript-language';
   const ROW_STYLE = [
     'display:flex', 'align-items:center', 'justify-content:space-between', 'gap:8px',
-    'padding:8px 10px', 'border-top:1px solid rgba(148,163,184,.3)',
-    'font:12px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif', 'color:#0f172a'
+    'font:12px/1.45 ui-sans-serif,system-ui,"Segoe UI","PingFang SC",sans-serif', 'color:#4b5566'
   ].join(';');
   const SELECT_STYLE = [
-    'font:inherit', 'color:inherit', 'background:#fff', 'border:1px solid rgba(148,163,184,.6)',
-    'border-radius:6px', 'padding:2px 4px', 'max-width:120px'
+    'font:inherit', 'color:#1a2230', 'background:#fff', 'border:1px solid #dfe2e8',
+    'border-radius:7px', 'padding:4px 6px', 'max-width:120px', 'cursor:pointer'
   ].join(';');
 
   // Both modules are bundled above; if one of them is missing the panel cannot be built anyway.
@@ -86,13 +89,21 @@
     return row;
   }
 
+  // The configuration column first, then the card, then the shadow root: whichever one exists keeps
+  // the row inside the panel, where the card's own padding and rounded corner apply.
+  function slotOf(shadow) {
+    const pick = (selector) =>
+      (typeof shadow.querySelector === 'function' ? shadow.querySelector(selector) : null);
+    return pick(`#${SLOT_ID}`) || pick('.panel') || shadow;
+  }
+
   function inject() {
     const host = panelHost();
     const shadow = shadowOf(host);
     if (!shadow || typeof shadow.appendChild !== 'function') return;
     if (shadow.querySelector && shadow.querySelector(`#${ROW_ID}`)) return;
     if (typeof shadow.getElementById === 'function' && shadow.getElementById(ROW_ID)) return;
-    shadow.appendChild(buildRow(currentLang()));
+    slotOf(shadow).appendChild(buildRow(currentLang()));
   }
 
   function watch() {

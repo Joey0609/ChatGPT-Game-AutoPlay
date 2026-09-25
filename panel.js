@@ -11,6 +11,11 @@
 
   const I18n = window.SnakeI18n;
 
+  // The userscript has no popup, so its glue adds the language row to this panel. This id is the
+  // mount point it looks for: inside the card, under the same padding as the other controls, which
+  // keeps the row from hanging below the rounded container.
+  const CONFIG_ID = 'snake-autoplay-config';
+
   // The panel is rebuilt when the language changes (content.js drops it), so the static labels can be
   // written once here while `paint()` re-reads the language on every frame.
   function translator(lang) {
@@ -361,7 +366,7 @@
       if (typeof callbacks.onToggle === 'function') callbacks.onToggle();
     });
 
-    const configRow = el('div', { class: 'config' }, [selectShell, toggle]);
+    const configRow = el('div', { class: 'config', id: CONFIG_ID }, [selectShell, toggle]);
 
     root.append(style, el('div', { class: 'panel' }, [head, boardBox, details, configRow]));
     document.documentElement.appendChild(host);
