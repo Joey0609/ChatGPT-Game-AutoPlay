@@ -1,9 +1,14 @@
 name: Release
 
 # Pushing a tag like v1.0.0 builds every package and publishes a GitHub Release.
-# Pull requests and manual runs only build and test, so a broken build never reaches a release.
+# So does pushing to main a commit whose subject starts with "release" (in any case):
+# the version in manifest.json then names the tag, and the release step creates it.
+# Any other push to main is ignored, and pull requests / manual runs only build and
+# test, so a broken build never reaches a release.
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
   pull_request:
@@ -15,7 +20,19 @@ permissions:
 jobs:
   build:
     name: Build and test
+    # A tag push always runs. A branch push only runs when its tip commit subject starts
+    # with "release" (any case); every other push to main is ignored. Pull requests and
+    # manual runs always build, they just never publish.
+    if: >-
+      github.event_name != 'push'
+      || github.ref_type == 'tag'
+      || startsWith(github.event.head_commit.message, 'release')
+      || startsWith(github.event.head_commit.message, 'Release')
+      || startsWith(github.event.head_commit.message, 'RELEASE')
     runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.mode.outputs.publish }}
+      tag: ${{ steps.mode.outputs.tag }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
@@ -24,6 +41,34 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      # Decides whether this run publishes. A tag push publishes under that tag; a commit
+      # whose subject starts with "release" publishes under v<version from manifest.json>,
+      # which the release step below creates if it does not exist yet. Anything else only
+      # keeps the build artifacts.
+      - name: Detect the release mode
+        id: mode
+        run: |
+          set -euo pipefail
+          subject="$(git log -1 --pretty=%s)"
+          version="$(node -p 'require("./manifest.json").version')"
+          shopt -s nocasematch
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            publish=yes
+            tag="${GITHUB_REF_NAME}"
+          elif [[ "$subject" == release* ]]; then
+            publish=yes
+            tag="v${version}"
+          else
+            publish=no
+            tag=""
+          fi
+          {
+            echo "publish=$publish"
+            echo "tag=$tag"
+            echo "version=$version"
+          } >> "$GITHUB_OUTPUT"
+          echo "::notice::\"$subject\" on ${GITHUB_REF_TYPE} ${GITHUB_REF_NAME} -> publish=$publish tag=${tag:-none}"
 
       # The build and the tests use nothing but the Node standard library: there is no
       # package.json, nothing to install and nothing to cache.
@@ -46,8 +91,11 @@ jobs:
           run_suite test/test-bridge.js
           run_suite test/test-i18n.js
           run_suite test/test-popup.js
+          run_suite test/test-popup-ui.js
+          run_suite test/test-popup-css.js
           run_suite test/test-build.js
           run_suite test/test-userscript.js
+          run_suite test/test-panel-ui.js
           run_suite test/test-integration.js 900 canvas
           run_suite test/test-integration.js 900 fiber
 
@@ -82,13 +130,32 @@ jobs:
           if-no-files-found: error
 
       - name: Publish the GitHub Release
-        if: github.ref_type == 'tag'
+        if: steps.mode.outputs.publish == 'yes'
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          tag_name: ${{ steps.mode.outputs.tag }}
+          name: ${{ steps.mode.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          # The body is written out here on purpose: `generate_release_notes` appends its text to
+          # an existing release, so re-publishing a tag stacked two identical "Full Changelog"
+          # lines on the same page. A literal body is overwritten instead, run after run.
+          body: |
+            ### Install
+
+            - **Chrome / Edge** - unzip `snake-autoplay-${{ steps.mode.outputs.version }}-chrome.zip` and load that folder with *Load unpacked* on `chrome://extensions`.
+            - **Firefox** - `snake-autoplay-${{ steps.mode.outputs.version }}-firefox.zip` is the add-on package (temporary load today, the signed build once AMO is wired up).
+            - **Tampermonkey / Violentmonkey** - install [`snake-autoplay.user.js`](https://github.com/${{ github.repository }}/releases/latest/download/snake-autoplay.user.js); it updates itself through `@updateURL`.
+            - `checksums.txt` carries the SHA-256 of every asset attached below.
+
+            在 `chrome://extensions` 里用「加载已解压的扩展程序」选中解压后的目录即可；油猴脚本从最新 release 的 `snake-autoplay.user.js` 安装后会自动更新。完整说明见 [README.md](https://github.com/${{ github.repository }}/blob/${{ steps.mode.outputs.tag }}/README.md) 和 [README.zh-CN.md](https://github.com/${{ github.repository }}/blob/${{ steps.mode.outputs.tag }}/README.zh-CN.md)。
+
+            **Full Changelog**: https://github.com/${{ github.repository }}/commits/${{ steps.mode.outputs.tag }}
+          # `snake-autoplay.user.js` is the name @updateURL and the READMEs point at; the
+          # versioned glob below cannot match it because the stable name has no second hyphen.
           files: |
             dist/snake-autoplay-*.zip
             dist/snake-autoplay-*.user.js
+            dist/snake-autoplay.user.js
             dist/snake-autoplay-*.crx
             dist/checksums.txt
 
@@ -97,7 +164,7 @@ jobs:
   publish:
     name: Submit to the stores
     needs: build
-    if: github.ref_type == 'tag'
+    if: needs.build.outputs.publish == 'yes'
     runs-on: ubuntu-latest
     env:
       AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
@@ -142,10 +209,11 @@ jobs:
         if: env.AMO_API_KEY != ''
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.build.outputs.tag }}
         run: |
           set -euo pipefail
           xpi="$(ls dist/amo/*.xpi | head -n 1)"
-          gh release upload "${GITHUB_REF_NAME}" "$xpi" --clobber
+          gh release upload "${RELEASE_TAG}" "$xpi" --clobber
 
       # Chrome Web Store: uploads the zip as a new version of an existing item. Add
       # `npx chrome-webstore-upload-cli publish` as a second command to also submit it for review.
@@ -170,4 +238,4 @@ jobs:
           zip-path: dist/snake-autoplay-chrome.zip
           client-id: ${{ secrets.EDGE_CLIENT_ID }}
           api-key: ${{ secrets.EDGE_API_KEY }}
-          notes-for-certification: Built from ${{ github.repository }} tag ${{ github.ref_name }}.
+          notes-for-certification: Built from ${{ github.repository }} release ${{ needs.build.outputs.tag }}.

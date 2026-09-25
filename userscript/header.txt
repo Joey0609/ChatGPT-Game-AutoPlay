@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name         ChatGPT Snake Autoplay
-// @name:zh-CN   ChatGPT 贪吃蛇自动游玩
+// @name         ChatGPT Game Autoplay
+// @name:zh-CN   ChatGPT 游戏自动游玩
 // @namespace    snake-autoplay
 // @version      {{version}}
-// @description  Plays the snake on ChatGPT's image-generation waiting screen: the exact React game state is read from the page, canvas vision is the fallback.
-// @description:zh-CN  在 ChatGPT 等待出图的贪吃蛇里自动游玩：优先读取页面里的真实 React 游戏状态，像素识别作为兜底。
+// @description  Plays the mini-game on ChatGPT's image-generation waiting screen automatically. Everything runs locally; nothing is sent anywhere.
+// @description:zh-CN  在 ChatGPT 等待出图时显示的小游戏里自动游玩；一切都在本地运行，不发送任何数据。
 // @author       {{author}}
 // @match        https://chatgpt.com/*
 // @match        https://chat.openai.com/*

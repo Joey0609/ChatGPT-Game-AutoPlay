@@ -3,35 +3,46 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Snake Autoplay</title>
+  <title>ChatGPT Game Autoplay</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <!-- Static text carries English as its built-in value plus a data-i18n key; popup.js rewrites every
        [data-i18n] node from i18n.js for the stored language (English by default). -->
   <main>
-    <header><span class="mark" aria-hidden="true">S</span><div><h1 data-i18n="appTitle">Snake Autoplay</h1><p id="site" data-i18n="site">ChatGPT waiting game</p></div></header>
+    <header><span class="mark" aria-hidden="true"><img class="mark-img" src="icons/icon128.png" alt="" width="38" height="38"></span><div class="titles"><h1 data-i18n="appTitle">ChatGPT Game Autoplay</h1><p id="version" class="version">Version —</p></div></header>
     <section class="control-row"><label for="enabled" data-i18n="autoPlay">Auto-play</label><input id="enabled" type="checkbox" role="switch"></section>
     <section class="control-row"><label for="panel" data-i18n="showPanel">Show panel</label><input id="panel" type="checkbox" role="switch"></section>
     <label class="field-label" for="algorithm" data-i18n="strategy">Strategy</label>
-    <select id="algorithm">
-      <option value="bfs" data-i18n="algBfs">Safe BFS</option>
-      <option value="flood" data-i18n="algFlood">Flood fill</option>
-      <option value="cycle" data-i18n="algCycle">Hamiltonian cycle</option>
-    </select>
+    <!-- The native <select> stays in the markup: it holds the value popup.js reads and writes, and it
+         keeps the control reachable without JavaScript. popup-ui.js paints the visible button and the
+         animated list on top of it and mirrors every pick back into the select. -->
+    <div class="select">
+      <select id="algorithm">
+        <option value="bfs" data-i18n="algBfs">Safe BFS</option>
+        <option value="flood" data-i18n="algFlood">Flood fill</option>
+        <option value="cycle" data-i18n="algCycle">Hamiltonian cycle</option>
+      </select>
+      <button type="button" class="select-face" aria-haspopup="listbox" aria-expanded="false"><span class="select-label">Safe BFS</span><span class="chev" aria-hidden="true"></span></button>
+      <div class="select-menu" role="listbox" aria-label="Strategy"></div>
+    </div>
     <label class="field-label" for="language" data-i18n="language">Language</label>
-    <select id="language">
-      <option value="en">English</option>
-      <option value="zh">中文</option>
-      <option value="fr">Français</option>
-      <option value="ru">Русский</option>
-      <option value="es">Español</option>
-    </select>
-    <p id="status" role="status" data-i18n="checking">Checking this page…</p>
-    <p id="version" class="version">Version —</p>
+    <!-- Open upwards: the language picker is the last row, and the popup is only as tall as its content. -->
+    <div class="select" data-drop="up">
+      <select id="language">
+        <option value="en">English</option>
+        <option value="zh">中文</option>
+        <option value="fr">Français</option>
+        <option value="ru">Русский</option>
+        <option value="es">Español</option>
+      </select>
+      <button type="button" class="select-face" aria-haspopup="listbox" aria-expanded="false"><span class="select-label">English</span><span class="chev" aria-hidden="true"></span></button>
+      <div class="select-menu" role="listbox" aria-label="Language"></div>
+    </div>
   </main>
   <script src="i18n.js"></script>
   <script src="config.js"></script>
   <script src="popup.js"></script>
+  <script src="popup-ui.js"></script>
 </body>
 </html>

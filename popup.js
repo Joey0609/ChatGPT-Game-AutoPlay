@@ -2,31 +2,18 @@ const enabledInput = document.querySelector('#enabled');
 const panelInput = document.querySelector('#panel');
 const algorithmInput = document.querySelector('#algorithm');
 const languageInput = document.querySelector('#language');
-const status = document.querySelector('#status');
 const versionLabel = document.querySelector('#version');
 const { defaults, normalize, save, load } = window.SnakeConfig;
 const I18n = window.SnakeI18n;
 
 let tabId;
 let config = { ...defaults };
-// The status line is kept as a translation KEY, so switching the language re-renders it instead of
-// leaving a sentence in the language that was active when it was written.
-let statusKey = 'checking';
-let statusState = '';
+// Set the moment the user flips the switch, so an answer from the page that is already in flight can
+// never undo the click.
+let switchTouched = false;
 
 function t(key, vars) {
   return I18n.t(config.lang, key, vars);
-}
-
-function setStatus(key, state = '') {
-  statusKey = key;
-  statusState = state;
-  renderStatus();
-}
-
-function renderStatus() {
-  status.textContent = statusKey ? t(statusKey) : '';
-  status.dataset.state = statusState;
 }
 
 // Rewrites every static text node from i18n.js. Static markup ships English plus a `data-i18n` key;
@@ -40,7 +27,6 @@ function applyLanguage() {
   versionLabel.textContent = t('version', { version: chrome.runtime.getManifest?.().version || '1.0.0' });
   document.documentElement.lang = config.lang;
   if (languageInput.value !== config.lang) languageInput.value = config.lang;
-  renderStatus();
 }
 
 function send(type, payload = {}) {
@@ -90,30 +76,31 @@ chrome.tabs.query({ active: true, currentWindow: true }, async ([tab]) => {
   applyLanguage();
 
   if (!onChatGPT(tab)) {
-    // Off-site there is no content script to talk to: the switches stay disabled and the status stays
-    // empty instead of explaining it.
-    setStatus('');
-    enabledInput.disabled = true;
+    // Off-site there is no content script to talk to, but the controls are still the settings: each one
+    // writes the stored config, and the page picks it up on its next load. So nothing is disabled - the
+    // tooltip just says why flipping a switch changes nothing on screen right now.
+    const hint = t('offsiteHint');
+    for (const node of [enabledInput, panelInput, algorithmInput, languageInput]) node.title = hint;
     return;
   }
   try {
     const current = await send('snake:status');
-    enabledInput.checked = current.enabled;
-    setStatus(current.board ? 'boardFound' : 'waitingBoard', current.board ? 'ready' : '');
-  } catch (_) {
-    setStatus('pageReload', 'error');
-  }
+    // Storage is the source of truth. A page that still reports autoplay running while the setting says
+    // "off" - a content script from an earlier load, a toggle message that never arrived - is put back
+    // in step here, instead of flipping the switch back on under the user's hand.
+    if (!switchTouched && current && current.enabled !== enabledInput.checked) {
+      await send('snake:toggle', { enabled: enabledInput.checked });
+    }
+  } catch (_) { /* No content script yet: the switch already shows the stored setting. */ }
 });
 
 enabledInput.addEventListener('change', async () => {
+  switchTouched = true;
   // Persist first: the switch itself is the setting, whether or not the page is reachable.
   await persist();
   try {
     await send('snake:toggle', { enabled: enabledInput.checked });
-    setStatus(enabledInput.checked ? 'autoOn' : 'autoOff', 'ready');
-  } catch (_) {
-    setStatus('savedReload', 'error');
-  }
+  } catch (_) { /* Stored already; the page picks it up on its next load. */ }
 });
 
 panelInput.addEventListener('change', persist);

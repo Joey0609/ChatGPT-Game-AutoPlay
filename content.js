@@ -1,5 +1,5 @@
 /**
- * ChatGPT snake autoplay - the orchestrator (content script, isolated world).
+ * ChatGPT Game Autoplay - the orchestrator (content script, isolated world).
  *
  * This file holds only the game loop and the wiring; each concern lives in its own module:
  *   algorithms.js  how to move        (BFS / flood / Hamiltonian cycle planners)
@@ -314,6 +314,10 @@
     if (!patch || typeof patch !== 'object') return config;
     const previousLang = config.lang;
     Config.apply(config, patch, ALGORITHMS);
+    // Storage is the source of truth: a config that arrives while this loop is running has to be able to
+    // stop it, otherwise a page that was enabled by an earlier load would keep sending keys after the
+    // setting was switched off.
+    if (!config.autoStart && enabled) setEnabled(false);
     // The panel writes its static labels once, when it is created, so a language switch has to drop it
     // and let the next paint build a fresh one.
     if (config.lang !== previousLang && overlay) {

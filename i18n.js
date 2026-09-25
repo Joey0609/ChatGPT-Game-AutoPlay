@@ -23,7 +23,7 @@
 
   const MESSAGES = {
     en: {
-      appTitle: 'Snake Autoplay',
+      appTitle: 'ChatGPT Game Autoplay',
       site: 'ChatGPT waiting game',
       autoPlay: 'Auto-play',
       showPanel: 'Show panel',
@@ -40,7 +40,7 @@
       autoOn: 'Auto-play is on',
       autoOff: 'Auto-play is paused',
       savedReload: 'Settings saved; refresh the page to apply.',
-      panelTitle: 'Snake auto-play',
+      panelTitle: 'Game auto-play',
       boardUnknown: 'Board not recognized',
       notStarted: 'Not started',
       sourceFiber: 'React state',
@@ -50,6 +50,7 @@
       emptyNotStarted: 'The game has not started yet',
       toggleOn: 'Auto: on',
       toggleOff: 'Auto: off',
+      offsiteHint: 'Saved; it takes effect on a ChatGPT tab.',
       waitingStart: 'Waiting for the game to start',
       routeSteps: '{steps} steps → {target}',
       fieldGrid: 'Grid',
@@ -70,7 +71,7 @@
       reasonTailEscape: 'into the tail cell'
     },
     zh: {
-      appTitle: 'Snake Autoplay',
+      appTitle: 'ChatGPT Game Autoplay',
       site: 'ChatGPT 等待游戏',
       autoPlay: '自动游玩',
       showPanel: '显示面板',
@@ -87,7 +88,7 @@
       autoOn: '自动游玩已开启',
       autoOff: '自动游玩已暂停',
       savedReload: '已保存设置；刷新页面后生效。',
-      panelTitle: '贪吃蛇自动游玩',
+      panelTitle: '游戏自动游玩',
       boardUnknown: '画板未识别',
       notStarted: '未开始',
       sourceFiber: 'React 状态',
@@ -97,6 +98,7 @@
       emptyNotStarted: '游戏还没开始',
       toggleOn: '自动：开',
       toggleOff: '自动：关',
+      offsiteHint: '已保存，打开 ChatGPT 页面后生效。',
       waitingStart: '等待游戏开始',
       routeSteps: '{steps} 步 → {target}',
       fieldGrid: '网格',
@@ -117,7 +119,7 @@
       reasonTailEscape: '进入尾格'
     },
     fr: {
-      appTitle: 'Snake Autoplay',
+      appTitle: 'ChatGPT Game Autoplay',
       site: 'Jeu d’attente ChatGPT',
       autoPlay: 'Lecture auto',
       showPanel: 'Afficher le panneau',
@@ -134,7 +136,7 @@
       autoOn: 'Lecture auto activée',
       autoOff: 'Lecture auto en pause',
       savedReload: 'Réglages enregistrés ; actualisez la page.',
-      panelTitle: 'Lecture auto du serpent',
+      panelTitle: 'Lecture auto du jeu',
       boardUnknown: 'Plateau non reconnu',
       notStarted: 'Pas commencé',
       sourceFiber: 'État React',
@@ -144,6 +146,7 @@
       emptyNotStarted: 'La partie n’a pas encore commencé',
       toggleOn: 'Auto : activé',
       toggleOff: 'Auto : désactivé',
+      offsiteHint: 'Enregistré ; prend effet sur un onglet ChatGPT.',
       waitingStart: 'En attente du début de la partie',
       routeSteps: '{steps} pas → {target}',
       fieldGrid: 'Grille',
@@ -164,7 +167,7 @@
       reasonTailEscape: 'vers la queue'
     },
     ru: {
-      appTitle: 'Snake Autoplay',
+      appTitle: 'ChatGPT Game Autoplay',
       site: 'Игра ожидания ChatGPT',
       autoPlay: 'Автоигра',
       showPanel: 'Показать панель',
@@ -181,7 +184,7 @@
       autoOn: 'Автоигра включена',
       autoOff: 'Автоигра на паузе',
       savedReload: 'Настройки сохранены; обновите страницу.',
-      panelTitle: 'Автоигра «Змейка»',
+      panelTitle: 'Автоигра',
       boardUnknown: 'Поле не распознано',
       notStarted: 'Не начато',
       sourceFiber: 'Состояние React',
@@ -191,6 +194,7 @@
       emptyNotStarted: 'Игра ещё не началась',
       toggleOn: 'Авто: вкл.',
       toggleOff: 'Авто: выкл.',
+      offsiteHint: 'Сохранено; действует на вкладке ChatGPT.',
       waitingStart: 'Ожидание начала игры',
       routeSteps: '{steps} шагов → {target}',
       fieldGrid: 'Сетка',
@@ -211,7 +215,7 @@
       reasonTailEscape: 'в клетку хвоста'
     },
     es: {
-      appTitle: 'Snake Autoplay',
+      appTitle: 'ChatGPT Game Autoplay',
       site: 'Juego de espera de ChatGPT',
       autoPlay: 'Reproducción automática',
       showPanel: 'Mostrar panel',
@@ -228,7 +232,7 @@
       autoOn: 'Reproducción automática activada',
       autoOff: 'Reproducción automática en pausa',
       savedReload: 'Ajustes guardados; actualiza la página.',
-      panelTitle: 'Reproducción automática de la serpiente',
+      panelTitle: 'Reproducción automática del juego',
       boardUnknown: 'Tablero no reconocido',
       notStarted: 'Sin empezar',
       sourceFiber: 'Estado de React',
@@ -238,6 +242,7 @@
       emptyNotStarted: 'La partida aún no ha empezado',
       toggleOn: 'Auto: activado',
       toggleOff: 'Auto: desactivado',
+      offsiteHint: 'Guardado; se aplica en una pestaña de ChatGPT.',
       waitingStart: 'Esperando a que empiece la partida',
       routeSteps: '{steps} pasos → {target}',
       fieldGrid: 'Rejilla',
