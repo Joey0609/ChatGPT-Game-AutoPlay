@@ -1,13 +1,25 @@
 {
   "manifest_version": 3,
-  "name": "ChatGPT Snake Autoplay",
+  "name": "ChatGPT Game Autoplay",
   "version": "1.0.0",
-  "description": "Play the ChatGPT waiting-screen snake automatically: the exact React game state is read through a MAIN-world bridge, with canvas vision as the fallback.",
+  "description": "Plays the mini-game shown while ChatGPT generates images for you, automatically. Everything runs locally in the browser; nothing is sent anywhere.",
   "permissions": ["storage", "activeTab"],
   "host_permissions": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "action": {
-    "default_title": "Snake Autoplay",
-    "default_popup": "popup.html"
+    "default_title": "ChatGPT Game Autoplay",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "content_scripts": [
     {

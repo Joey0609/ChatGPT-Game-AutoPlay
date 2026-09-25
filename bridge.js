@@ -1,5 +1,5 @@
 /**
- * ChatGPT snake autoplay - MAIN world bridge.
+ * ChatGPT Game Autoplay - MAIN world bridge.
  *
  * The exact game state lives in a React ref inside the page
  * (`{ type: "snake", state: { columns, rows, segments, previousSegments, food, direction,
@@ -25,7 +25,7 @@
   const CONTENT_SOURCE = 'snake-autoplay';
   const BRIDGE_SOURCE = 'snake-autoplay-bridge';
   const GAME_SELECTOR = '[data-testid="image-gen-loading-game-board"]';
-  const LOG_PREFIX = '[Snake Autoplay]';
+  const LOG_PREFIX = '[Game Autoplay]';
   const VERSION = '1.0.0';
 
   // The real game steps every 95..190 ms (max(95, 190 - 7*score)); polling clearly faster than the

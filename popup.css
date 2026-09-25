@@ -1,16 +1,322 @@
+/* ChatGPT Game Autoplay - popup styling.
+   The markup only exposes #enabled, #panel, #algorithm, #language and #version, so everything
+   here is presentation. Every animation is switched off under prefers-reduced-motion. */
+
+/* The mascot is the green snake emoji, so the accent is a cool azure (which is also the colour the
+   panel paints its planned route in) and the logo tile is a deep ink navy: green reads well on navy
+   and badly on green. */
+:root {
+  --bg: #f7f9fc;
+  --card: #ffffff;
+  --ink: #1a2230;
+  --muted: #6b7688;
+  --label-ink: #4b5566;
+  --footer-ink: #8b93a3;
+  --line: #e4e9f1;
+  --line-hover: #ccd6e4;
+  --field-line: #d2dae6;
+  --track: #e7ebf2;
+  --track-line: #ccd5e2;
+  --knob: #ffffff;
+  --knob-shadow: 0 1px 4px rgba(15, 30, 60, .3);
+  --brand: #2563eb;
+  --brand-light: #3b82f6;
+  --brand-deep: #1d4ed8;
+  --ring: rgba(37, 99, 235, .3);
+  --wash: rgba(37, 99, 235, .12);
+  --mark-from: #2a3a54;
+  --mark-to: #101a2c;
+  --mark-shadow: 0 3px 10px rgba(16, 26, 44, .34);
+  --menu-shadow: 0 14px 30px rgba(15, 30, 60, .18), 0 2px 8px rgba(15, 30, 60, .08);
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121722;
+    --card: #1a2130;
+    --ink: #e7ecf4;
+    --muted: #99a4b6;
+    --label-ink: #c4cddd;
+    --footer-ink: #79839a;
+    --line: #242d3d;
+    --line-hover: #33405a;
+    --field-line: #2c3648;
+    --track: #232c3c;
+    --track-line: #33405a;
+    --knob: #f2f5fa;
+    --knob-shadow: 0 1px 4px rgba(0, 0, 0, .55);
+    --brand: #3b82f6;
+    --brand-light: #60a5fa;
+    --brand-deep: #2563eb;
+    --ring: rgba(96, 165, 250, .32);
+    --wash: rgba(96, 165, 250, .13);
+    --mark-from: #33445f;
+    --mark-to: #16203a;
+    --mark-shadow: 0 3px 12px rgba(0, 0, 0, .55);
+    --menu-shadow: 0 16px 34px rgba(0, 0, 0, .5), 0 2px 8px rgba(0, 0, 0, .35);
+  }
+}
+
 * { box-sizing: border-box; }
-body { width: 292px; margin: 0; color: #222; background: #fafaf8; font: 14px/1.4 system-ui, sans-serif; }
-main { padding: 16px; }
-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-.mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 8px; color: #fff; background: #17865b; font-weight: 800; }
-h1 { margin: 0; font-size: 15px; font-weight: 700; }
-header p, #status { margin: 2px 0 0; color: #6b6b68; font-size: 12px; }
-.control-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid #e3e3de; border-bottom: 1px solid #e3e3de; }
-.control-row + .control-row { border-top: 0; }
-input[type="checkbox"] { width: 36px; height: 20px; margin: 0; accent-color: #17865b; }
-.field-label { display: flex; justify-content: space-between; margin: 14px 0 6px; color: #444; font-size: 12px; }
-select { width: 100%; height: 34px; padding: 0 8px; border: 1px solid #d0d0ca; border-radius: 5px; background: #fff; color: #222; }
-#status { min-height: 18px; margin-top: 14px; }
-#status[data-state="ready"] { color: #147249; }
-#status[data-state="error"] { color: #ae382d; }
-.version { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid #e3e3de; color: #8a8a86; font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
+
+body {
+  width: 300px;
+  margin: 0;
+  color: var(--ink);
+  background: var(--bg);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  animation: popup-in .26s var(--ease) both;
+}
+
+/* A very soft azure wash behind the title, so the panel does not look flat. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 160px;
+  background: radial-gradient(160px 100px at 18% 45%, var(--wash), transparent 70%);
+  pointer-events: none;
+}
+
+main { position: relative; padding: 16px 16px 14px; }
+
+/* --- entrance: every row rises in with a small stagger --------------------- */
+main > * { animation: rise .34s var(--ease) both; }
+main > *:nth-child(1) { animation-delay: .02s; }
+main > *:nth-child(2) { animation-delay: .06s; }
+main > *:nth-child(3) { animation-delay: .10s; }
+main > *:nth-child(4) { animation-delay: .14s; }
+main > *:nth-child(5) { animation-delay: .18s; }
+main > *:nth-child(6) { animation-delay: .22s; }
+main > *:nth-child(7) { animation-delay: .26s; }
+main > *:nth-child(8) { animation-delay: .30s; }
+main > *:nth-child(9) { animation-delay: .34s; }
+
+header { display: flex; align-items: center; gap: 11px; margin-bottom: 16px; }
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 8px;
+  /* The logo paints its own tile; this is the fallback for the moment before it loads. */
+  background: linear-gradient(135deg, var(--mark-from), var(--mark-to));
+  box-shadow: var(--mark-shadow), inset 0 1px 0 rgba(255, 255, 255, .18);
+  animation: bob 3.4s ease-in-out .35s infinite;
+}
+
+.mark-img { display: block; width: 100%; height: 100%; border-radius: inherit; }
+
+.titles { min-width: 0; }
+
+h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+}
+
+/* The release number sits under the title, where a subtitle would be. */
+.version {
+  margin: 3px 0 0;
+  color: var(--footer-ink);
+  font-size: 11.5px;
+  letter-spacing: .01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- the two switches ----------------------------------------------------- */
+.control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
+}
+
+.control-row:first-of-type { border-radius: 10px 10px 0 0; }
+.control-row + .control-row { border-top: 0; border-radius: 0 0 10px 10px; }
+.control-row:hover { border-color: var(--line-hover); box-shadow: 0 2px 10px rgba(15, 30, 60, .08); }
+.control-row:has(input:focus-visible) { border-color: var(--brand); }
+
+.control-row label { cursor: pointer; }
+
+/* Custom pill switch: no native chrome, a knob that springs across. */
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex: none;
+  margin: 0;
+  border: 1px solid var(--track-line);
+  border-radius: 999px;
+  background: var(--track);
+  cursor: pointer;
+  transition: background-color .28s var(--ease), border-color .28s var(--ease), box-shadow .2s var(--ease);
+}
+
+input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--knob);
+  box-shadow: var(--knob-shadow);
+  transition: transform .3s var(--spring), width .18s var(--ease);
+}
+
+input[type="checkbox"]:checked {
+  border-color: var(--brand-deep);
+  background: linear-gradient(135deg, var(--brand-light), var(--brand));
+}
+
+input[type="checkbox"]:checked::after { transform: translateX(18px); }
+input[type="checkbox"]:active::after { width: 20px; }
+input[type="checkbox"]:checked:active::after { transform: translateX(16px); }
+input[type="checkbox"]:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ring); }
+input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
+
+/* --- the two selects: a painted face over the real control ----------------- */
+.field-label {
+  display: flex;
+  justify-content: space-between;
+  margin: 14px 0 6px;
+  color: var(--label-ink);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+.select { position: relative; z-index: 1; }
+/* An open list has to float over the rows below it, and the later row would otherwise win. */
+.select[data-open="true"] { z-index: 4; }
+
+/* The native control keeps the value but never shows: full size, transparent, and out of the way of the
+   pointer. It is not display:none, so assistive tech can still read it. */
+.select > select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.select-face {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  height: 36px;
+  padding: 0 11px;
+  border: 1px solid var(--field-line);
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .2s var(--ease), box-shadow .2s var(--ease), transform .12s var(--ease);
+}
+
+.select-face:hover { border-color: var(--line-hover); }
+.select-face:active { transform: scale(.995); }
+.select-face:focus-visible { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--ring); }
+.select[data-open="true"] .select-face { border-color: var(--brand); box-shadow: 0 0 0 3px var(--ring); }
+.select-face:disabled { opacity: .45; cursor: not-allowed; }
+
+.select-label { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+.chev {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  margin-top: -4px;
+  border-right: 1.6px solid var(--muted);
+  border-bottom: 1.6px solid var(--muted);
+  transform: rotate(45deg);
+  transition: transform .26s var(--spring), border-color .2s var(--ease);
+}
+
+.select[data-open="true"] .chev { margin-top: 4px; transform: rotate(-135deg); border-color: var(--brand); }
+
+/* The list drops in: it fades, slides and scales, then the rows arrive one after another. */
+.select-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 3;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--card);
+  box-shadow: var(--menu-shadow);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-7px) scale(.97);
+  transform-origin: top center;
+  transition: opacity .16s var(--ease), transform .24s var(--spring), visibility .16s linear;
+}
+
+/* The language row is last: there is no room below it inside the popup, so it opens upwards. */
+.select[data-drop="up"] .select-menu {
+  top: auto;
+  bottom: calc(100% + 6px);
+  transform: translateY(7px) scale(.97);
+  transform-origin: bottom center;
+}
+
+.select[data-open="true"] .select-menu { opacity: 1; visibility: visible; transform: none; }
+
+.select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 9px;
+  border-radius: 7px;
+  color: var(--ink);
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: background-color .15s var(--ease), color .15s var(--ease), opacity .18s var(--ease), transform .18s var(--ease);
+}
+
+.select[data-open="true"] .select-option { opacity: 1; transform: none; }
+.select[data-open="true"] .select-option:nth-child(1) { transition-delay: .02s; }
+.select[data-open="true"] .select-option:nth-child(2) { transition-delay: .06s; }
+.select[data-open="true"] .select-option:nth-child(3) { transition-delay: .10s; }
+.select[data-open="true"] .select-option:nth-child(4) { transition-delay: .14s; }
+.select[data-open="true"] .select-option:nth-child(5) { transition-delay: .18s; }
+.select[data-open="true"] .select-option:nth-child(6) { transition-delay: .22s; }
+
+.select-option:hover, .select-option[data-active="true"] { background: var(--wash); }
+.select-option[aria-selected="true"] { color: var(--brand); font-weight: 600; }
+.select-option::after { content: ''; margin-left: 8px; color: var(--brand); font-weight: 700; }
+.select-option[aria-selected="true"]::after { content: '✓'; }
+
+@keyframes popup-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes rise { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
+@keyframes bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-2px) } }
+
+@media (prefers-reduced-motion: reduce) {
+  body, main > *, .mark { animation: none !important; }
+  * { transition: none !important; }
+}

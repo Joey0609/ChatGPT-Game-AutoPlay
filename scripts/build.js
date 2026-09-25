@@ -48,7 +48,12 @@ const EXTENSION_FILES = [
   'bridge.js',
   'popup.html',
   'popup.css',
-  'popup.js'
+  'popup.js',
+  'popup-ui.js',
+  'icons/icon16.png',
+  'icons/icon32.png',
+  'icons/icon48.png',
+  'icons/icon128.png'
 ];
 
 // The userscript is the same modules concatenated. `bridge.js` is inserted before `content.js` so the
@@ -218,7 +223,7 @@ function build(options = {}) {
 
   for (const [name, data] of artifacts) writeFile(path.join(out, name), data);
 
-  log(`Built ChatGPT Snake Autoplay ${version} into ${path.relative(ROOT, out) || '.'}`);
+  log(`Built ChatGPT Game Autoplay ${version} into ${path.relative(ROOT, out) || '.'}`);
   for (const name of Array.from(artifacts.keys()).sort()) {
     log(`  ${name} (${artifacts.get(name).length} bytes)`);
   }
